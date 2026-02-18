@@ -1,0 +1,17 @@
+[project]
+name = "greek-semantic-ui"
+version = "0.1.0"
+description = "Interactive UI for exploring Greek semantic embeddings"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "torch>=2.10.0",
+    "transformers[torch]>=5.1.0",
+    "sentence-transformers>=5.2.2",
+    "pygame>=2.6.1",
+    "numpy>=1.24.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
