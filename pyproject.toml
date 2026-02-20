@@ -13,6 +13,8 @@ dependencies = [
     "ipykernel>=7.2.0",
     "pandas>=3.0.1",
     "pyarrow<21",
+    "streamlit>=1.19.0",
+    "altair<5",
 ]
 
 [build-system]
