@@ -1,7 +1,9 @@
-import pygame
-import numpy as np
-import torch
 import os
+import re
+
+import numpy as np
+import pygame
+import torch
 
 # Sample data for John 1:1 (expand as needed)
 verse_data = [
@@ -18,13 +20,68 @@ verse_data = [
     {"greek": "ὁ λόγος", "english": "the Word"}
 ]
 
-from transformers import AutoModel, AutoTokenizer
-import torch
-import numpy as np
-import os
 from sentence_transformers import SentenceTransformer, models
 
-model_dir = "models/Greek_v2_Expanded"
+model_dir = "models/GreekBERT_v3"
+corpus_path = "greek_corpus.txt"
+
+
+def extract_words(text: str) -> list[str]:
+    return re.findall(r"[^\W\d_]+", text, flags=re.UNICODE)
+
+
+def is_greek_word(word: str) -> bool:
+    for char in word:
+        code_point = ord(char)
+        if (
+            0x0370 <= code_point <= 0x03FF
+            or 0x1F00 <= code_point <= 0x1FFF
+            or 0x10140 <= code_point <= 0x1018F
+        ):
+            return True
+    return False
+
+
+def load_candidate_words(base_data: list[dict], corpus_file: str) -> list[str]:
+    candidates: set[str] = set()
+
+    for item in base_data:
+        for token in extract_words(item["greek"]):
+            if is_greek_word(token):
+                candidates.add(token)
+
+    if os.path.exists(corpus_file):
+        with open(corpus_file, "r", encoding="utf-8") as file_handle:
+            for line in file_handle:
+                for token in extract_words(line):
+                    if is_greek_word(token):
+                        candidates.add(token)
+    else:
+        print(
+            f"Warning: {corpus_file} not found. "
+            "Using only words from verse_data as candidates."
+        )
+
+    return sorted(candidates)
+
+
+def build_embedding_index(texts: list[str]) -> dict[str, np.ndarray]:
+    vectors = model.encode(
+        texts,
+        batch_size=128,
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+        show_progress_bar=len(texts) > 500,
+    )
+    return {text: vector for text, vector in zip(texts, vectors)}
+
+
+def get_embedding(text: str) -> np.ndarray:
+    return model.encode(
+        text,
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+    )
 
 # Load the underlying transformer (your RoBERTa)
 transformer = models.Transformer(
@@ -47,21 +104,12 @@ model = SentenceTransformer(modules=[transformer, pooling_model])
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
 
-# Now this works beautifully:
-def get_embedding(text: str):
-    return model.encode(text, convert_to_numpy=True, normalize_embeddings=True)
-    # normalize_embeddings=True is often helpful for cosine similarity
+# Build candidate vocabulary from corpus + visible verse text
+candidate_words = load_candidate_words(verse_data, corpus_path)
+candidate_embeddings = build_embedding_index(candidate_words)
 
-# Cache as before
-embeddings = {item["greek"]: get_embedding(item["greek"]) for item in verse_data}
-
-# Function to get embedding
-def get_embedding(text):
-    with torch.no_grad():
-        return model.encode(text)
-
-# Compute embeddings for all Greek phrases (cache them)
-embeddings = {item["greek"]: get_embedding(item["greek"]) for item in verse_data}
+# Cache embeddings for displayed verse phrases
+display_embeddings = build_embedding_index([item["greek"] for item in verse_data])
 
 # Cosine similarity function
 def cosine_similarity(a, b):
@@ -120,10 +168,10 @@ while running:
     # Draw similarity options if selected
     if selected_greek:
         similarities = []
-        selected_emb = embeddings[selected_greek]
-        for other_greek in embeddings:
+        selected_emb = display_embeddings.get(selected_greek, get_embedding(selected_greek))
+        for other_greek, other_emb in candidate_embeddings.items():
             if other_greek != selected_greek:
-                sim = cosine_similarity(selected_emb, embeddings[other_greek])
+                sim = cosine_similarity(selected_emb, other_emb)
                 similarities.append((other_greek, sim))
         similarities.sort(key=lambda x: x[1], reverse=True)
         
@@ -131,9 +179,16 @@ while running:
         sidebar_y = 200
         screen.blit(font.render(f"Selected: {selected_greek}", True, BLACK), (sidebar_x, sidebar_y))
         sidebar_y += 40
-        screen.blit(small_font.render("Most similar Greek phrases (cosine):", True, BLACK), (sidebar_x, sidebar_y))
+        screen.blit(
+            small_font.render(
+                f"Most similar Greek words from corpus ({len(candidate_words)} candidates):",
+                True,
+                BLACK,
+            ),
+            (sidebar_x, sidebar_y),
+        )
         sidebar_y += 30
-        for other, sim in similarities[:5]:
+        for other, sim in similarities[:10]:
             sim_text = small_font.render(f"{other}: {sim:.2f}", True, BLACK)
             screen.blit(sim_text, (sidebar_x, sidebar_y))
             sidebar_y += 25

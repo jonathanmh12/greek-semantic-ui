@@ -26,6 +26,8 @@ uv sync
 python test_ui.py
 ```
 
+For corpus-wide word retrieval, place your training text at `greek_corpus.txt` in the project root. The app extracts unique Greek word tokens from that file and uses them as similarity candidates.
+
 **How it works:**
 1. Load a pre-trained Greek embedding model
 2. Generate embeddings for your corpus
@@ -34,7 +36,7 @@ python test_ui.py
 
 ## Data
 
-Currently loads verse data from John 1:1. To use your own data, edit the `verse_data` list in `test_ui.py` or modify the script to load from `greek_corpus.txt`.
+Currently loads verse data from John 1:1 for clickable UI text. Similarity candidates come from `greek_corpus.txt` (if present), plus visible Greek tokens in `verse_data`.
 
 ## Models
 
