@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import torch
+import faiss
 from sentence_transformers import SentenceTransformer, models
 
 # --- CONFIG & MODEL LOADING ---
@@ -9,12 +10,22 @@ st.set_page_config(page_title="Greek Verse Explorer", layout="wide")
 
 @st.cache_resource
 def load_model():
-    model_dir = "models/GreekBERT_v3"
-    transformer = models.Transformer(model_dir, tokenizer_args={"use_fast": True})
-    pooling = models.Pooling(transformer.get_word_embedding_dimension(), pooling_mode="mean")
-    model = SentenceTransformer(modules=[transformer, pooling])
+    """Load the same model used to build the FAISS index."""
+    word_embedding_model = models.Transformer("models/ancient-greek-biblical-sbert")
+    pooling_model = models.Pooling(
+        word_embedding_model.get_word_embedding_dimension(),
+        pooling_mode="mean",
+    )
+    model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
     device = "cuda" if torch.cuda.is_available() else "cpu"
     return model.to(device)
+
+@st.cache_resource
+def load_faiss_index():
+    """Load the pre-built FAISS index and its metadata."""
+    index = faiss.read_index("bible_greek.index")
+    metadata = pd.read_pickle("bible_metadata.pkl")
+    return index, metadata
 
 @st.cache_data
 def load_data():
@@ -23,14 +34,21 @@ def load_data():
     return df
 
 model = load_model()
+faiss_index, verse_metadata = load_faiss_index()
 df = load_data()
 reference_data = df['reference'].astype(str).str.extract(
     r'^(?P<book>[^.]+)\.(?P<chapter>\d+)\.(?P<verse>.+)\.(?P<word>\d+)$'
 )
 
 # --- HELPER FUNCTIONS ---
-def cosine_similarity(a, b):
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+def semantic_search(query: str, top_k: int = 10):
+    """Search the FAISS index for verses most similar to `query`."""
+    query_vector = model.encode([query], convert_to_numpy=True)
+    faiss.normalize_L2(query_vector)
+    distances, indices = faiss_index.search(query_vector, top_k)
+    results = verse_metadata.iloc[indices[0]].copy()
+    results["similarity"] = distances[0]
+    return results
 
 
 def token_sort_key(token):
@@ -99,25 +117,12 @@ if 'selected_greek' in st.session_state:
         st.write(f"**English Gloss:** {english}")
         
     with col_sim:
-        st.write("### Semantic Similarity")
-        # Reuse your embedding logic
-        with st.spinner("Finding similar words..."):
-            target_emb = model.encode(greek)
-            
-            # For brevity/demo, we search within the current book's unique words
-            book_words = df[df['reference'].str.startswith(f"{book}.")]['text'].unique()
-            embeddings = model.encode(book_words)
-            
-            # Calculate similarities
-            sims = [cosine_similarity(target_emb, e) for e in embeddings]
-            results = sorted(zip(book_words, sims), key=lambda x: x[1], reverse=True)[1:11]
-            
-            # Display results in a table
-            sim_df = pd.DataFrame(results, columns=["Greek Word", "Similarity Score"])
-            sim_df = sim_df.astype({
-                "Greek Word": object,
-                "Similarity Score": "float64",
-            })
-            st.table(sim_df)
+        st.write("### Similar Verses (FAISS)")
+        with st.spinner("Searching vector database..."):
+            results = semantic_search(greek, top_k=10)
+            sim_df = results[["verse_ref", "text", "similarity"]].copy()
+            sim_df.columns = ["Reference", "Verse Text", "Similarity"]
+            sim_df = sim_df.reset_index(drop=True)
+            st.dataframe(sim_df, use_container_width=True)
 else:
     st.write("Click a Greek word above to view analysis and semantic tidbits.")
