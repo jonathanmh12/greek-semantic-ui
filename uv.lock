@@ -391,6 +391,7 @@ dependencies = [
     { name = "altair" },
     { name = "faiss-gpu-cu12" },
     { name = "ipykernel" },
+    { name = "kagglehub" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "pyarrow" },
@@ -406,6 +407,7 @@ requires-dist = [
     { name = "altair", specifier = ">=6.0.0" },
     { name = "faiss-gpu-cu12", specifier = ">=1.13.2" },
     { name = "ipykernel", specifier = ">=7.2.0" },
+    { name = "kagglehub", specifier = ">=1.0.0" },
     { name = "numpy", specifier = ">=1.24.0" },
     { name = "pandas", specifier = "<3" },
     { name = "pyarrow", specifier = "<21" },
@@ -656,6 +658,35 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/02/49/9d1284d0dc65e2c757b74c6687b6d319b02f822ad039e5c512df9194d9dd/jupyter_core-5.9.1.tar.gz", hash = "sha256:4d09aaff303b9566c3ce657f580bd089ff5c91f5f89cf7d8846c3cdf465b5508", size = 89814, upload-time = "2025-10-16T19:19:18.444Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e7/e7/80988e32bf6f73919a113473a604f5a8f09094de312b9d52b79c2df7612b/jupyter_core-5.9.1-py3-none-any.whl", hash = "sha256:ebf87fdc6073d142e114c72c9e29a9d7ca03fad818c5d300ce2adc1fb0743407", size = 29032, upload-time = "2025-10-16T19:19:16.783Z" },
+]
+
+[[package]]
+name = "kagglehub"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "kagglesdk" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/98/b2/a542a926e47f0f6947d9fa7117b3a730edbf2a76fffc71e19b8755a58f33/kagglehub-1.0.0.tar.gz", hash = "sha256:21dc25d0279e2071f8b97cd9e1393d003ea5e054ea48f1e8139a39e4771e9a8d", size = 117315, upload-time = "2026-02-11T19:45:36.227Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/18/78/08cec00ea05fd2469f9395da0306bb368c4ed275693be8d31473eafaf90c/kagglehub-1.0.0-py3-none-any.whl", hash = "sha256:9397f0c6af04cdefa6fa8734c31b42863e8741aad5832c6f3af52f1ecf8fe509", size = 70632, upload-time = "2026-02-11T19:45:34.626Z" },
+]
+
+[[package]]
+name = "kagglesdk"
+version = "0.1.16"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "protobuf" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/23/0e/51bf72a462e1e72fe3427b7c52b11c9c52cbcc63d7ce90f81a8f56d5a71b/kagglesdk-0.1.16.tar.gz", hash = "sha256:4a20da4ac6f4085e64b976a313ee136d4698737dc5be7c0f13009fadd41d5540", size = 121064, upload-time = "2026-02-27T19:32:34.019Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/69/6b/db30f17ad132391ac37a751fa45b32fd954a7ffa484fa3550eee9678334d/kagglesdk-0.1.16-py3-none-any.whl", hash = "sha256:a26ba7a754866f8eef1e327e78101f2960b6fe9b1b323183f2f61170abdb11ff", size = 160520, upload-time = "2026-02-27T19:32:32.721Z" },
 ]
 
 [[package]]
