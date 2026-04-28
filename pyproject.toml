@@ -15,9 +15,10 @@ dependencies = [
     "pyarrow<21",
     "streamlit>=1.30.0",
     "altair>=6.0.0",
-    "faiss-gpu-cu12>=1.13.2",
     "scikit-learn>=1.4",
     "kagglehub>=1.0.0",
+    "matplotlib>=3.10.8",
+    "faiss-cpu>=1.13.2",
 ]
 
 [build-system]

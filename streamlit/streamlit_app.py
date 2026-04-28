@@ -30,8 +30,9 @@ def title_page():
 pg = st.navigation(
 	[
 		st.Page(title_page, title="Title Page", icon="🏠"),
-		st.Page("new_streamlit_ui.py", title="Verse Analysis", icon="📜"),
-		st.Page("topic_modeling.py", title="Topic Modeling", icon="🗂️"),
+		st.Page("pages/new_streamlit_ui.py", title="Verse Analysis", icon="📜"),
+		st.Page("pages/topic_modeling.py", title="Topic Modeling", icon="🗂️"),
+		st.Page("pages/word_level_page.py", title="Word-Level Analysis", icon="🔍"),
 	]
 )
 pg.run()
