@@ -26,6 +26,27 @@ uv sync
 python test_ui.py
 ```
 
+## Streamlit With Precomputed LDA Insights
+
+Run the one-time artifact build after training or updating LDA outputs:
+
+```bash
+python build_lda_artifacts.py
+```
+
+This writes runtime-ready files in `data/greek-nt-sbert_v2/lda/`:
+
+- `verse_topics.csv`
+- `topic_summary.csv`
+- `topic_term_weights.csv`
+- `artifacts_manifest.json`
+
+Then launch the Streamlit app:
+
+```bash
+streamlit run pages/streamlit_app.py
+```
+
 For corpus-wide word retrieval, place your training text at `greek_corpus.txt` in the project root. The app extracts unique Greek word tokens from that file and uses them as similarity candidates.
 
 **How it works:**

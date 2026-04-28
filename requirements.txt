@@ -1,0 +1,11 @@
+streamlit>=1.30.0
+numpy>=1.24.0
+pandas<3
+pyarrow<21
+faiss-cpu>=1.13.2
+torch>=2.10.0
+transformers[torch]>=5.1.0
+sentence-transformers>=5.2.2
+altair>=6.0.0
+scikit-learn>=1.4
+matplotlib>=3.10.8
