@@ -1,3 +1,14 @@
+---
+title: Greek Semantic Analysis
+emoji: 📜
+colorFrom: blue
+colorTo: indigo
+sdk: streamlit
+sdk_version: "1.45.0"
+app_file: streamlit/streamlit_app.py
+pinned: false
+---
+
 # Greek Semantic UI
 
 Interactive UI for exploring Greek semantic embeddings from the Bible.
